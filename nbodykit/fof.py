@@ -195,8 +195,10 @@ def fof(datasource, linking_length, nmin, comm=MPI.COMM_WORLD, log_level=logging
     comm.barrier()
     if comm.rank == 0: logger.info("Starting local fof.")
 
+    logger.info("rank %d start pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0))
     minid = local_fof(layout, Position, datasource.BoxSize, linking_length, comm)
-    
+    logger.info("rank %d end   pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0))
+
     comm.barrier()
     if comm.rank == 0: logger.info("Finished local fof.")
 
