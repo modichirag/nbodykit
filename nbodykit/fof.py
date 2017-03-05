@@ -98,11 +98,11 @@ def local_fof(layout, pos, boxsize, ll, comm):
     N = len(pos)
 
     pos = layout.exchange(pos)
-    logger.info("rank %d build tree pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
+    logger.info("rank %d build tree pos %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)))
     data = cluster.dataset(pos, boxsize=boxsize)
-    logger.info("rank %d run fof %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
+    logger.info("rank %d run fof %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)))
     fof = cluster.fof(data, linking_length=ll, np=0)
-    logger.info("rank %d end   pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
+    logger.info("rank %d end   pos %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)))
 
     labels = fof.labels
     del fof
