@@ -98,8 +98,12 @@ def local_fof(layout, pos, boxsize, ll, comm):
     N = len(pos)
 
     pos = layout.exchange(pos)
+    logger.info("rank %d build tree pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
     data = cluster.dataset(pos, boxsize=boxsize)
+    logger.info("rank %d run fof %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
     fof = cluster.fof(data, linking_length=ll, np=0)
+    logger.info("rank %d end   pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
+
     labels = fof.labels
     del fof
 
@@ -195,9 +199,7 @@ def fof(datasource, linking_length, nmin, comm=MPI.COMM_WORLD, log_level=logging
     comm.barrier()
     if comm.rank == 0: logger.info("Starting local fof.")
 
-    logger.info("rank %d start pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
     minid = local_fof(layout, Position, datasource.BoxSize, linking_length, comm)
-    logger.info("rank %d end   pos %s %s" % (comm.rank, Position.min(axis=0), Position.max(axis=0)))
 
     comm.barrier()
     if comm.rank == 0: logger.info("Finished local fof.")
