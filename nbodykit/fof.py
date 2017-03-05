@@ -98,7 +98,8 @@ def local_fof(layout, pos, boxsize, ll, comm):
     N = len(pos)
 
     pos = layout.exchange(pos)
-    logger.info("rank %d build tree pos %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)))
+    pos %= boxsize
+    logger.info("rank %d build tree pos %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)), len(pos))
     data = cluster.dataset(pos, boxsize=boxsize)
     logger.info("rank %d run fof %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)))
     fof = cluster.fof(data, linking_length=ll, np=0)
@@ -195,7 +196,6 @@ def fof(datasource, linking_length, nmin, comm=MPI.COMM_WORLD, log_level=logging
     if comm.rank == 0: logger.debug('grid: %s' % str(grid))
 
     layout = domain.decompose(Position, smoothing=linking_length * 1)
-
     comm.barrier()
     if comm.rank == 0: logger.info("Starting local fof.")
 
