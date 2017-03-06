@@ -97,13 +97,21 @@ def fof_halo_label(minid, comm, thresh):
 def local_fof(layout, pos, boxsize, ll, comm):
     N = len(pos)
 
+    zeros_before = comm.allreduce((pos == 0).all(axis=-1).sum())
     pos = layout.exchange(pos)
+    zeros_after = comm.allreduce((pos == 0).all(axis=-1).sum())
+    if comm.rank == 0:
+        logger.info("zeros_before = %d", zeros_before)
+    if comm.rank == 0:
+        logger.info("zeros_after = %d", zeros_before)
+    if comm.rank == 15:
+        pos.tofile('rank-15-%d.pos' % len(pos))
+    if comm.rank == 112:
+        pos.tofile('rank-112-%d.pos' % len(pos))
+
     pos %= boxsize
-    logger.info("rank %d build tree pos %s %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0), len(pos)))
     data = cluster.dataset(pos, boxsize=boxsize)
-    logger.info("rank %d run fof %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)))
     fof = cluster.fof(data, linking_length=ll, np=0)
-    logger.info("rank %d end   pos %s %s" % (comm.rank, pos.min(axis=0), pos.max(axis=0)))
 
     labels = fof.labels
     del fof
@@ -192,10 +200,13 @@ def fof(datasource, linking_length, nmin, comm=MPI.COMM_WORLD, log_level=logging
     with datasource.open() as stream:
         [[Position]] = stream.read(['Position'], full=True)
 
+    zeros_before = comm.allreduce((Position == 0).all(axis=-1).sum())
+    if comm.rank == 0: logger.info("zeros read " % zeros_before)
+
     if comm.rank == 0: logger.info("ll %g. " % linking_length)
     if comm.rank == 0: logger.debug('grid: %s' % str(grid))
 
-    layout = domain.decompose(Position, smoothing=linking_length * 1)
+    layout = domain.decompose(Position, smoothing=0) #linking_length * 1)
     comm.barrier()
     if comm.rank == 0: logger.info("Starting local fof.")
 
